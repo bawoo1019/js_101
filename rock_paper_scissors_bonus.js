@@ -1,76 +1,94 @@
 const readline = require('readline-sync');
-const VALID_CHOICES = ['r', 'p', 'ss', 's', 'l'];
+const VALID_CHOICES = ['rock', 'paper', 'Scissors', 'spock', 'lizard'];
 
 function prompt(message) {
   console.log(`=> ${message}`);
 }
 
-function displayWinner(choice, computerChoice) {
-  prompt(`You chose ${choice}, computer chose ${computerChoice}`);
+const WINNING_COMBOS = {
+  rock:     ['Scissors', 'lizard'],
+  paper:    ['rock', 'spock'],
+  Scissors: ['paper', 'lizard'],
+  lizard:   ['paper', 'spock'],
+  spock:    ['rock', 'Scissors'],
+};
 
-  if ((choice === 'ss' && computerChoice === 'p') ||
-      (choice === 'p' && computerChoice === 'r') ||
-      (choice === 'r' && computerChoice === 'l') ||
-      (choice === 'l' && computerChoice === 's') ||
-      (choice === 's' && computerChoice === 'ss') ||
-      (choice === 'ss' && computerChoice === 'l') ||
-      (choice === 'l' && computerChoice === 'p') ||
-      (choice === 'p' && computerChoice === 'r') ||
-      (choice === 's' && computerChoice === 'r') ||
-      (choice === 'r' && computerChoice === 'ss') ||
-      (choice === 'r' && computerChoice === 'ss')) {
-    prompt('You win!');
-    return 'You win!';
-  } else if ((computerChoice === 'ss' && choice === 'p') ||
-            (computerChoice === 'p' && choice === 'r') ||
-            (computerChoice === 'r' && choice === 'l') ||
-            (computerChoice === 'l' && choice === 's') ||
-            (computerChoice === 's' && choice === 'ss') ||
-            (computerChoice === 'ss' && choice === 'l') ||
-            (computerChoice === 'l' && choice === 'p') ||
-            (computerChoice === 'p' && choice === 's') ||
-            (computerChoice === 's' && choice === 'r') ||
-            (computerChoice === 'r' && choice === 'ss')) {
-    prompt('Computer wins!');
-    return 'Computer wins!';
+function playerWins(choice, computerChoice) {
+  return WINNING_COMBOS[choice].includes(computerChoice);
+}
+
+let firstLetter = ['r', 'p', 'S', 's', 'l'];
+
+let playerScore = 0;
+let computerScore = 0;
+
+function updateCurrentScore (choice, computerChoice) {
+  if (playerWins(choice, computerChoice)) {
+    playerScore += 1;
+    prompt(`Current playerScore is: ${playerScore}`);
+  } else if (choice === computerChoice) {
+    prompt(`No score added`);
   } else {
+    computerScore += 1;
+    prompt(`Current computerScore is: ${computerScore}`);
+  }
+}
+
+function outputRoundResult (choice, computerChoice) {
+  if (playerWins(choice, computerChoice)) {
+    prompt("You won this round!");
+  } else if (choice === computerChoice) {
     prompt("It's a tie!");
-    return 'It\'s a tie!';
+  } else {
+    prompt("The computer won this round!");
+  }
+}
+
+function outputGrandWinner() {
+  if (playerScore === 5) {
+    prompt('Congrats! You are the Grand Winner!');
+  } else if (computerScore === 5) {
+    prompt('Better luck next time! Computer is the Grand Winner!');
   }
 }
 
 while (true) {
-  let user = 0;
-  let computer = 0;
   prompt('You are playing for the best of five');
+  if (playerScore === 5 || computerScore === 5) {
+    playerScore = 0;
+    computerScore = 0;
+  }
 
   while (true) {
-    prompt(`Type one: \n
+    prompt(`Choose one: ${VALID_CHOICES.join(', ')}\nyou may also type a single letter\n
     'r' for rock\n
     'p' for paper\n
-    'ss' for scissors\n
+    'S' for scissors\n
     's' for spock\n
     'l' for lizard`);
     let choice = readline.question();
 
-    while (!VALID_CHOICES.includes(choice)) {
+    while (!(VALID_CHOICES.includes(choice) || firstLetter.includes(choice))) {
       prompt("That's not a valid choice");
       choice = readline.question();
     }
 
-    let randomIndex = Math.floor(Math.random() * VALID_CHOICES.length);
-    let computerChoice = VALID_CHOICES[randomIndex];
-    let result = displayWinner(choice, computerChoice);
-
-    if (result === 'You win!') {
-      user += 1;
-      console.log(user);
-    } else if (result === 'Computer wins!') {
-      computer += 1;
-      console.log(computer);
+    for (let counter = 0; counter < VALID_CHOICES.length; counter++) {
+      if (choice.length === 1 && choice === VALID_CHOICES[counter][0]) {
+        choice = VALID_CHOICES[counter];
+        break;
+      }
     }
 
-    if (user === 5 || computer === 5) break;
+    let randomIndex = Math.floor(Math.random() * VALID_CHOICES.length);
+    let computerChoice = VALID_CHOICES[randomIndex];
+
+    updateCurrentScore(choice, computerChoice);
+    outputRoundResult(choice, computerChoice);
+    outputGrandWinner();
+
+    if (playerScore === 5 || computerScore === 5) break;
+
   }
 
   prompt('Do you want to play again (y/n)?');
